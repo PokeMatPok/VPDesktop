@@ -1,0 +1,80 @@
+[weekday_1]
+other = "Montag"
+
+[weekday_2]
+other = "Dienstag"
+
+[weekday_3]
+other = "Mittwoch"
+
+[weekday_4]
+other = "Donnerstag"
+
+[weekday_5]
+other = "Freitag"
+
+[weekday_6]
+other = "Samstag"
+
+[weekday_7]
+other = "Sonntag"
+
+[class_1]
+other = "1. Stunde"
+
+[class_2]
+other = "2. Stunde"
+
+[class_3]
+other = "3. Stunde"
+
+[class_4]
+other = "4. Stunde"
+
+[class_5]
+other = "5. Stunde"
+
+[class_6]
+other = "6. Stunde"
+
+[class_7]
+other = "7. Stunde"
+
+[class_8]
+other = "8. Stunde"
+
+[class_9]
+other = "9. Stunde"
+
+[login_title]
+other = "Bei VPMobil anmelden"
+
+[schoolnumber]
+other = "Schulnummer"
+
+[username]
+other = "Benutzername"
+
+[password]
+other = "Passwort"
+
+[class]
+other = "Klasse"
+
+[login_btn]
+other = "Anmelden"
+
+[fetch_plans_progress]
+other = "Hole deinen Stundenplan. Bitte warten..."
+
+[fetch_plans_success]
+other = "Anmeldung erfolgreich. Bitte warten..."
+
+[fetch_plans_error_reason_any]
+other = "Etwas ist schiefgelaufen. Bitte später erneut versuchen."
+
+[fetch_plans_error_reason_auth]
+other = "Falsche Anmeldedaten, bitte prüfen."
+
+[fetch_plans_error_reason_network]
+other = "Es scheint keine Internetverbindung zu bestehen."

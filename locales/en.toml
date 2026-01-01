@@ -1,0 +1,80 @@
+[weekday_1]
+other = "Monday"
+
+[weekday_2]
+other = "Tuesday"
+
+[weekday_3]
+other = "Wednesday"
+
+[weekday_4]
+other = "Thursday"
+
+[weekday_5]
+other = "Friday"
+
+[weekday_6]
+other = "Saturday"
+
+[weekday_7]
+other = "Sunday"
+
+[class_1]
+other = "1st Period"
+
+[class_2]
+other = "2nd Period"
+
+[class_3]
+other = "3rd Period"
+
+[class_4]
+other = "4th Period"
+
+[class_5]
+other = "5th Period"
+
+[class_6]
+other = "6th Period"
+
+[class_7]
+other = "7th Period"
+
+[class_8]
+other = "8th Period"
+
+[class_9]
+other = "9th Period"
+
+[login_title]
+other = "Log in to VPMobil"
+
+[schoolnumber]
+other = "School number"
+
+[username]
+other = "Username"
+
+[password]
+other = "Password"
+
+[class]
+other = "Class"
+
+[login_btn]
+other = "Login"
+
+[fetch_plans_progress]
+other = "Getting your timetable. Please wait..."
+
+[fetch_plans_success]
+other = "Login success. Please wait..."
+
+[fetch_plans_error_reason_any]
+other = "Something went wrong. Retry later."
+
+[fetch_plans_error_reason_auth]
+other = "Wrong credentials, please check them."
+
+[fetch_plans_error_reason_network]
+other = "It seems you arent connected to the internet"
