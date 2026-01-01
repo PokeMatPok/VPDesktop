@@ -1,0 +1,39 @@
+# Binaries
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binaries and build outputs
+*.test
+*.out
+*.prof
+bin/
+build/
+dist/
+
+
+# Go-specific
+go.sum
+
+# Coverage
+coverage*.txt
+coverage*.out
+
+# Logs and temp files
+*.log
+*.tmp
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE/editor
+.vscode/
+.idea/
+
+# Vendor (uncomment if vendored dependencies should be ignored)
+# vendor/
