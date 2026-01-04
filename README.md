@@ -2,9 +2,6 @@
 
 ## VPDesktop - Native Desktop Client for VpMobil / Stundenplan24
 
-
-Overview
---------
 VPDesktop is a native desktop client for viewing school timetables from VpMobil/Stundenplan24.
 Built in Go, it provides a modern, fast, and reliable alternative to the legacy mobile apps.
 VPDesktop allows students to view classes for the current or next schoolday with full API integration.
