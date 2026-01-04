@@ -5,9 +5,11 @@ import (
 	"image/color"
 	"log"
 	"os"
-	"vpmobil_app/api"
-	"vpmobil_app/types"
-	"vpmobil_app/ui"
+	"strings"
+	"vpdesktop/api"
+	"vpdesktop/cache"
+	"vpdesktop/types"
+	"vpdesktop/ui"
 
 	"gioui.org/app"
 	"gioui.org/op"
@@ -15,6 +17,7 @@ import (
 	"github.com/cloudfoundry/jibber_jabber"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 	tomlv2 "github.com/pelletier/go-toml/v2"
+	"github.com/zalando/go-keyring"
 	"golang.org/x/text/language"
 )
 
@@ -30,11 +33,28 @@ func init() {
 
 	AppState = types.AppState{
 		ActiveUI: "login",
+		Login: types.LoginState{
+			LoginRequested:  false,
+			LoginInProgress: false,
+			LoginSuccess:    false,
+			LoginNote:       "",
+		},
+	}
 
-		LoginRequested:  false,
-		LoginInProgress: false,
-		LoginSuccess:    false,
-		LoginNote:       "",
+	if cache.HasCacheFile("recent_logins") {
+		credentials, err := cache.ReadJSONCacheFile[types.LoginCredentials]("recent_logins")
+
+		if err == nil {
+			AppState.Login.RecentLogin = credentials
+
+			pass, err := keyring.Get("vpdesktop", credentials.School+credentials.Username)
+			if err == nil {
+				AppState.Login.RecentLogin.Password = pass
+				AppState.SelectedSchool = credentials.School
+				AppState.SelectedUsername = credentials.Username
+				AppState.SelectedPassword = password
+			}
+		}
 	}
 
 	locale, err := jibber_jabber.DetectLanguage()
@@ -47,25 +67,7 @@ func init() {
 
 	localizer = i18n.NewLocalizer(bundle, locale)
 
-	// still in development
-	/*cache.EnsureCacheDirExists()
-	cache.EnsureSchoolCacheDir("example")
-	cache.WriteCacheFile("example/example", []byte("This is a test cache file."))
-	cacheData, err := cache.ReadCacheFile("example/example")
-	if err != nil {
-		panic(err)
-	}
-	fmt.Println(string(cacheData))
-
-	err := keyring.Set("vpmobil", "username", "password")
-	if err != nil {
-		panic(err)
-	}
-
-	password, err = keyring.Get("vpmobil_app", "lehrer")
-	if err != nil {
-		panic(err)
-	}*/
+	cache.EnsureCacheDirExists()
 
 	go func() {
 		app.Title("VPMobil")
@@ -95,10 +97,19 @@ func run(window *app.Window) error {
 			switch AppState.ActiveUI {
 			case "login":
 
-				if AppState.LoginRequested && !AppState.LoginInProgress {
-					AppState.LoginRequested = false
-					AppState.LoginInProgress = true
-					AppState.LoginNote = localizer.MustLocalize(&i18n.LocalizeConfig{
+				if AppState.Login.RecentLoginDeletionRequested == true {
+					keyring.Delete("vpdesktop", AppState.Login.RecentLogin.School+AppState.Login.RecentLogin.Username)
+					cache.DeleteCacheFile("recent_logins")
+
+					AppState.Login.RecentLogin = types.LoginCredentials{}
+					AppState.Login.RecentLoginDeletionRequested = false
+
+				}
+
+				if AppState.Login.LoginRequested && !AppState.Login.LoginInProgress {
+					AppState.Login.LoginRequested = false
+					AppState.Login.LoginInProgress = true
+					AppState.Login.LoginNote = localizer.MustLocalize(&i18n.LocalizeConfig{
 						MessageID: "fetch_plans_progress",
 					})
 
@@ -107,26 +118,50 @@ func run(window *app.Window) error {
 
 						AppState.ClassesResponse = res
 
-						AppState.LoginInProgress = false
+						AppState.Login.LoginInProgress = false
 						if err != nil {
-							AppState.LoginNote = localizer.MustLocalize(&i18n.LocalizeConfig{
+							AppState.Login.LoginNote = localizer.MustLocalize(&i18n.LocalizeConfig{
 								MessageID: "fetch_plans_error_reason_any",
 							})
 						} else {
-							AppState.LoginNote = ""
+							AppState.Login.LoginNote = ""
 						}
 
-						AppState.LoginSuccess = err == nil
-						if AppState.LoginSuccess {
-							AppState.LoginNote = localizer.MustLocalize(&i18n.LocalizeConfig{
+						AppState.Login.LoginSuccess = err == nil
+						if AppState.Login.LoginSuccess {
+							AppState.Login.LoginNote = localizer.MustLocalize(&i18n.LocalizeConfig{
 								MessageID: "fetch_plans_success",
 							})
 
+							cache.WriteJSONCacheFile("recent_logins",
+								types.LoginCredentials{
+									School:   school,
+									Username: user,
+								},
+							)
+
+							keyring.Set("vpdesktop", school+user, pass)
+
 							AppState.ActiveUI = "dayview"
+
+							for _, k := range AppState.ClassesResponse.Klassen.Klassen {
+								if strings.Contains(k.Kurz, AppState.SelectedClass) {
+									AppState.DayViewState.Lessons = []types.LessonDisplayData{}
+									for _, l := range k.Plan.Stunden {
+										lesson := types.LessonDisplayData{
+											Beginn: l.Beginn,
+											Ende:   l.Ende,
+											Fa:     types.ValueWithNote{Value: l.Fa.Value, Note: l.Fa.FaAe},
+											Le:     types.ValueWithNote{Value: l.Le.Value, Note: l.Le.LeAe},
+										}
+										AppState.DayViewState.Lessons = append(AppState.DayViewState.Lessons, lesson)
+									}
+								}
+							}
 						}
 
-						AppState.LoginInProgress = false
-						AppState.LoginRequested = false
+						AppState.Login.LoginInProgress = false
+						AppState.Login.LoginRequested = false
 
 						AppState.SelectedDate = res.Kopf.DatumPlan
 					}(
@@ -151,12 +186,15 @@ func run(window *app.Window) error {
 						"username":                         localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "username"}),
 						"password":                         localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "password"}),
 						"class":                            localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "class"}),
+						"remember_login":                   localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "remember_login"}),
 						"login_btn":                        localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "login_btn"}),
 						"fetch_plans_progress":             localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "fetch_plans_progress"}),
 						"fetch_plans_success":              localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "fetch_plans_success"}),
 						"fetch_plans_error_reason_any":     localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "fetch_plans_error_reason_any"}),
 						"fetch_plans_error_reason_auth":    localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "fetch_plans_error_reason_auth"}),
 						"fetch_plans_error_reason_network": localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "fetch_plans_error_reason_network"}),
+						"login_as":                         localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "login_as"}),
+						"delete_login":                     localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "delete_login"}),
 					})
 				// Pass the drawing operations to the GPU.
 				e.Frame(gtx.Ops)
@@ -169,7 +207,7 @@ func run(window *app.Window) error {
 				theme.Fg = color.NRGBA{R: 161, G: 161, B: 161, A: 255}
 				theme.Bg = color.NRGBA{R: 30, G: 30, B: 30, A: 255}
 
-				ui.DrawDayViewUI(gtx, theme, &AppState)
+				ui.Wrapper(gtx, theme, &AppState)
 
 				e.Frame(gtx.Ops)
 			}

@@ -28,9 +28,45 @@ type AppState struct {
 	SelectedClass string
 	SelectedDate  string
 
-	LoginRequested  bool
-	LoginInProgress bool
-	LoginSuccess    bool
-	LoginNote       string
+	Login LoginState
+
 	ClassesResponse ClassesResponse
+
+	TableViewData TableViewData
+	DayViewState  DayViewState
+}
+
+// Dayview related states
+type DayViewState struct {
+	Lessons []LessonDisplayData
+}
+
+type LessonDisplayData struct {
+	Beginn string
+	Ende   string
+	Fa     ValueWithNote
+	Le     ValueWithNote
+}
+
+type ValueWithNote struct {
+	Value string
+	Note  string
+}
+
+// Login related states
+
+type LoginState struct {
+	LoginRequested               bool
+	LoginInProgress              bool
+	LoginSuccess                 bool
+	LoginNote                    string
+	RememberLogin                bool
+	RecentLogin                  LoginCredentials
+	RecentLoginDeletionRequested bool
+}
+
+type LoginCredentials struct {
+	School   string
+	Username string
+	Password string
 }

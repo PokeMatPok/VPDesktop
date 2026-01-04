@@ -61,8 +61,17 @@ other = "Passwort"
 [class]
 other = "Klasse"
 
+[remember_login]
+other = "Anmeldedaten speichern"
+
 [login_btn]
 other = "Anmelden"
+
+[login_as]
+other = "Einloggen als"
+
+[delete_login]
+other = "Löschen"
 
 [fetch_plans_progress]
 other = "Hole deinen Stundenplan. Bitte warten..."

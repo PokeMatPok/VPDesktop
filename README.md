@@ -1,5 +1,4 @@
 ## VPDesktop - Native Desktop Client for VpMobil / Stundenplan24
-----------------------------------------------------------------
 
 Overview
 --------

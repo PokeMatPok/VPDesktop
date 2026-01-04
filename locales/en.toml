@@ -61,8 +61,17 @@ other = "Password"
 [class]
 other = "Class"
 
+[remember_login]
+other = "remember credentials"
+
 [login_btn]
 other = "Login"
+
+[login_as]
+other = "login as"
+
+[delete_login]
+other = "Delete"
 
 [fetch_plans_progress]
 other = "Getting your timetable. Please wait..."

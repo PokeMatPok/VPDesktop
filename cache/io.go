@@ -1,20 +1,23 @@
 package cache
 
 import (
-	"fmt"
+	"encoding/json"
 	"os"
 	"path/filepath"
 )
 
 func getCacheFilePath() string {
-	dir, _ := os.UserConfigDir()
+	dir, err := os.UserCacheDir()
+	if err != nil {
+		// last-resort fallback
+		return filepath.Join(os.TempDir(), "vpmobil")
+	}
 	return filepath.Join(dir, "vpmobil")
 }
 
 func EnsureCacheDirExists() error {
 	cachePath := getCacheFilePath()
 	_, err := os.Stat(cachePath)
-	fmt.Print(cachePath)
 	if os.IsNotExist(err) {
 		err = os.MkdirAll(cachePath, os.ModePerm)
 		if err != nil {
@@ -24,7 +27,7 @@ func EnsureCacheDirExists() error {
 	return nil
 }
 
-func DeleteCacheDir() error {
+func ClearAllCache() error {
 	cachePath := getCacheFilePath()
 	return os.RemoveAll(cachePath)
 }
@@ -43,7 +46,7 @@ func EnsureSchoolCacheDir(schoolID string) error {
 	return nil
 }
 
-func ReadSchoolCacheDir(schoolID string) ([]os.DirEntry, error) {
+func ListSchoolCacheFiles(schoolID string) ([]os.DirEntry, error) {
 	cachePath := getCacheFilePath()
 	schoolCachePath := filepath.Join(cachePath, schoolID)
 	return os.ReadDir(schoolCachePath)
@@ -62,27 +65,53 @@ func DeleteSchoolCacheDir(schoolID string) error {
 	return os.RemoveAll(schoolCachePath)
 }
 
-func CacheFileExists(relativePath string) bool {
+func HasCacheFile(relativePath string) bool {
 	cachePath := getCacheFilePath()
-	fullPath := filepath.Join(cachePath, relativePath+".tmp")
+	fullPath := filepath.Join(cachePath, relativePath+".cache")
 	_, err := os.Stat(fullPath)
 	return !os.IsNotExist(err)
 }
 
 func WriteCacheFile(relativePath string, data []byte) error {
 	cachePath := getCacheFilePath()
-	fullPath := filepath.Join(cachePath, relativePath+".tmp")
-	return os.WriteFile(fullPath, data, 0600)
+	fullPath := filepath.Join(cachePath, relativePath+".cache")
+
+	tmp := fullPath + ".writing"
+	if err := os.WriteFile(tmp, data, 0o600); err != nil {
+		return err
+	}
+
+	return os.Rename(tmp, fullPath)
 }
 
 func DeleteCacheFile(relativePath string) error {
 	cachePath := getCacheFilePath()
-	fullPath := filepath.Join(cachePath, relativePath+".tmp")
+	fullPath := filepath.Join(cachePath, relativePath+".cache")
 	return os.Remove(fullPath)
 }
 
 func ReadCacheFile(relativePath string) ([]byte, error) {
 	cachePath := getCacheFilePath()
-	fullPath := filepath.Join(cachePath, relativePath+".tmp")
+	fullPath := filepath.Join(cachePath, relativePath+".cache")
 	return os.ReadFile(fullPath)
+}
+
+func ReadJSONCacheFile[T any](relativePath string) (T, error) {
+	var result T
+	data, err := ReadCacheFile(relativePath)
+	if err != nil {
+		return result, err
+	}
+
+	err = json.Unmarshal(data, &result)
+	return result, err
+}
+
+func WriteJSONCacheFile[T any](relativePath string, data T) error {
+	bytes, err := json.Marshal(data)
+	if err != nil {
+		return err
+	}
+
+	return WriteCacheFile(relativePath, bytes)
 }

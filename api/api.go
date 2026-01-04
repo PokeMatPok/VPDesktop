@@ -2,14 +2,11 @@ package api
 
 import (
 	"encoding/xml"
-	"fmt"
 	"net/http"
-	"vpmobil_app/types"
+	"vpdesktop/types"
 )
 
-func baseVPMobilRequest(urlType string, url string, username string, password string) (*http.Response, error) {
-
-	fmt.Print(url)
+func baseVPMobilRequest(url string, username string, password string) (*http.Response, error) {
 	client := &http.Client{}
 
 	req, err := http.NewRequest("GET", url, nil)
@@ -23,13 +20,11 @@ func baseVPMobilRequest(urlType string, url string, username string, password st
 		return nil, err
 	}
 
-	fmt.Println("\n" + res.Status)
-
 	return res, nil
 }
 
 func VPMobilClassesRequest(url string, username string, password string) (types.ClassesResponse, error) {
-	response, err := baseVPMobilRequest(types.Classes, url, username, password)
+	response, err := baseVPMobilRequest(url, username, password)
 	if err != nil {
 		return types.ClassesResponse{}, err
 	}
@@ -47,7 +42,7 @@ func VPMobilClassesRequest(url string, username string, password string) (types.
 }
 
 func VPMobilTeachersRequest(url string, username string, password string) (types.TeachersResponse, error) {
-	response, err := baseVPMobilRequest(types.Teachers, url, username, password)
+	response, err := baseVPMobilRequest(url, username, password)
 	if err != nil {
 		return types.TeachersResponse{}, err
 	}
@@ -67,7 +62,7 @@ func VPMobilTeachersRequest(url string, username string, password string) (types
 }
 
 func VPMobilRoomsRequest(url string, username string, password string) (types.RoomsResponse, error) {
-	response, err := baseVPMobilRequest(types.Rooms, url, username, password)
+	response, err := baseVPMobilRequest(url, username, password)
 	if err != nil {
 		return types.RoomsResponse{}, err
 	}

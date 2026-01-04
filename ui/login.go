@@ -3,24 +3,40 @@ package ui
 import (
 	"image"
 	"image/color"
-	"vpmobil_app/types"
+	"vpdesktop/types"
 
+	"gioui.org/font/gofont"
 	"gioui.org/layout"
 	"gioui.org/op/clip"
 	"gioui.org/op/paint"
+	"gioui.org/text"
 	"gioui.org/unit"
 	"gioui.org/widget"
 	"gioui.org/widget/material"
+	"gioui.org/x/richtext"
 )
 
 var (
-	schoolEditor   widget.Editor
-	usernameEditor widget.Editor
-	passwordEditor widget.Editor
-	classEditor    widget.Editor
-	statusText     widget.Label
-	loginButton    widget.Clickable
+	schoolEditor      widget.Editor
+	usernameEditor    widget.Editor
+	passwordEditor    widget.Editor
+	classEditor       widget.Editor
+	RememberLogin     widget.Bool
+	statusText        widget.Label
+	loginButton       widget.Clickable
+	recentLoginButton widget.Clickable
 )
+
+var recentLoginText richtext.InteractiveText
+
+func when(cond bool, child layout.FlexChild) layout.FlexChild {
+	if cond {
+		return child
+	}
+	return layout.Rigid(func(gtx layout.Context) layout.Dimensions {
+		return layout.Dimensions{} // empty placeholder
+	})
+}
 
 func Card(
 	gtx layout.Context,
@@ -94,8 +110,18 @@ func vSpace(dp unit.Dp) layout.Widget {
 
 func DrawLoginUI(gtx layout.Context, th *material.Theme, state *types.AppState, locale map[string]string) layout.Dimensions {
 
-	if loginButton.Clicked(gtx) && !state.LoginRequested && !state.LoginInProgress && !state.LoginSuccess && state.SelectedSchool != "" && state.SelectedUsername != "" && state.SelectedPassword != "" {
-		state.LoginRequested = true
+	if loginButton.Clicked(gtx) && !state.Login.LoginRequested && !state.Login.LoginInProgress && !state.Login.LoginSuccess && state.SelectedSchool != "" && state.SelectedUsername != "" && state.SelectedPassword != "" {
+		state.Login.LoginRequested = true
+	}
+
+	if recentLoginButton.Clicked(gtx) {
+		state.SelectedUsername = state.Login.RecentLogin.Username
+		state.SelectedSchool = state.Login.RecentLogin.School
+		state.SelectedPassword = state.Login.RecentLogin.Password
+
+		usernameEditor.SetText(state.SelectedUsername)
+		schoolEditor.SetText(state.SelectedSchool)
+		passwordEditor.SetText(state.SelectedPassword)
 	}
 
 	return layout.Center.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
@@ -125,9 +151,14 @@ func DrawLoginUI(gtx layout.Context, th *material.Theme, state *types.AppState, 
 				state.SelectedUsername = usernameEditor.Text()
 				state.SelectedPassword = passwordEditor.Text()
 				state.SelectedClass = classEditor.Text()
+				state.Login.RememberLogin = RememberLogin.Value
 
 				title := material.H5(th, locale["title"])
 				title.Color = color.NRGBA{R: 0xff, G: 0xff, B: 0xff, A: 0xff}
+
+				login_as_label := material.Label(th, unit.Sp(12), locale["login_as"])
+				login_as_label.Color = color.NRGBA{R: 0xfb, G: 0xfb, B: 0xfb, A: 0xff}
+				login_as_label.Alignment = text.Middle
 
 				return layout.Flex{
 					Axis:    layout.Vertical,
@@ -201,6 +232,18 @@ func DrawLoginUI(gtx layout.Context, th *material.Theme, state *types.AppState, 
 						)
 					}),
 
+					layout.Rigid(vSpace(14)),
+
+					layout.Rigid(func(gtx layout.Context) layout.Dimensions {
+						return layout.Center.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
+							gtx.Constraints.Min.X = gtx.Dp(140)
+
+							chckbx := material.CheckBox(th, &RememberLogin, locale["remember_login"])
+							chckbx.IconColor = color.NRGBA{R: 90, G: 140, B: 255, A: 255}
+							return chckbx.Layout(gtx)
+						})
+					}),
+
 					layout.Rigid(vSpace(16)),
 
 					layout.Rigid(func(gtx layout.Context) layout.Dimensions {
@@ -217,10 +260,81 @@ func DrawLoginUI(gtx layout.Context, th *material.Theme, state *types.AppState, 
 						return layout.Center.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
 							gtx.Constraints.Min.X = gtx.Dp(140)
 
-							label := material.Label(th, unit.Sp(gtx.Dp(14)), state.LoginNote)
+							label := material.Label(th, unit.Sp(gtx.Dp(14)), state.Login.LoginNote)
 							return label.Layout(gtx)
 						})
 					}),
+
+					layout.Rigid(vSpace(40)),
+
+					when(state.Login.RecentLogin.Username != "", layout.Rigid(func(gtx layout.Context) layout.Dimensions {
+						return layout.Center.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
+
+							gtx.Constraints.Min.X = gtx.Dp(220)
+
+							return recentLoginButton.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
+
+								// Background
+								rr := clip.RRect{
+									Rect: image.Rectangle{Max: gtx.Constraints.Max},
+									NE:   gtx.Dp(10), NW: gtx.Dp(10),
+									SE: gtx.Dp(10), SW: gtx.Dp(10),
+								}
+								paint.FillShape(
+									gtx.Ops,
+									color.NRGBA{R: 90, G: 90, B: 100, A: 255},
+									rr.Op(gtx.Ops),
+								)
+
+								return layout.UniformInset(unit.Dp(10)).Layout(gtx, func(gtx layout.Context) layout.Dimensions {
+
+									spans := []richtext.SpanStyle{
+										{
+											Content: state.Login.RecentLogin.School + "\n",
+											Color:   color.NRGBA{R: 160, G: 160, B: 160, A: 255},
+											Size:    unit.Sp(13),
+											Font:    gofont.Collection()[0].Font,
+										},
+										{
+											Content:     state.Login.RecentLogin.Username,
+											Color:       color.NRGBA{R: 255, G: 255, B: 255, A: 255},
+											Size:        unit.Sp(15),
+											Font:        gofont.Collection()[0].Font,
+											Interactive: true,
+										},
+										{
+											Content:     " (" + locale["delete_login"] + ")",
+											Color:       color.NRGBA{R: 255, G: 0, B: 0, A: 255},
+											Size:        unit.Sp(12),
+											Font:        gofont.Collection()[0].Font,
+											Interactive: true,
+										},
+									}
+
+									// Process richtext interaction events
+									for {
+										span, ev, ok := recentLoginText.Update(gtx)
+										if !ok {
+											break
+										}
+										if ev.Type == richtext.Click {
+											if v, _ := span.Content(); v == " ("+locale["delete_login"]+")" {
+												state.Login.RecentLoginDeletionRequested = true
+											} else {
+												recentLoginButton.Click() // forward to button logic
+											}
+										}
+									}
+
+									return richtext.Text(
+										&recentLoginText,
+										th.Shaper,
+										spans...,
+									).Layout(gtx)
+								})
+							})
+						})
+					})),
 				)
 			},
 		)

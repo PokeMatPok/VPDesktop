@@ -1,55 +1,59 @@
 package ui
 
 import (
-	"strings"
-	"vpmobil_app/types"
+	"image/color"
+	"vpdesktop/types"
 
 	"gioui.org/layout"
+	"gioui.org/unit"
+	"gioui.org/widget"
 	"gioui.org/widget/material"
 )
 
 func DrawDayViewUI(gtx layout.Context, th *material.Theme, state *types.AppState) layout.Dimensions {
 
-	label := material.H5(th, state.SelectedDate+" - "+state.SelectedClass)
-
-	var match int
-	for i, k := range state.ClassesResponse.Klassen.Klassen {
-		if strings.Contains(k.Kurz, state.SelectedClass) {
-			match = i
-			break
-		}
-	}
-
-	var DisplayValues []string
-	for _, m := range state.ClassesResponse.Klassen.Klassen[match].Plan.Stunden {
-		DisplayValues = append(DisplayValues, m.Beginn+" - "+m.Ende+" "+m.Fa.Value+" mit "+m.Le.Value)
+	border := widget.Border{
+		Color: color.NRGBA{R: 210, G: 210, B: 210, A: 255},
+		Width: unit.Dp(2),
 	}
 
 	return layout.Center.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
-		return layout.Flex{
-			Axis: layout.Vertical,
-		}.Layout(gtx,
-			// Top label
-			layout.Rigid(func(gtx layout.Context) layout.Dimensions {
-				return label.Layout(gtx)
-			}),
+		var list layout.List // vertical scroll
+		list.Axis = layout.Vertical
 
-			// List of DisplayValues
-			layout.Rigid(func(gtx layout.Context) layout.Dimensions {
-				return layout.Flex{
-					Axis: layout.Vertical,
-				}.Layout(gtx, func() []layout.FlexChild {
-					children := make([]layout.FlexChild, 0, len(DisplayValues))
-					for _, v := range DisplayValues {
-						text := v // avoid loop variable capture
-						children = append(children, layout.Rigid(func(gtx layout.Context) layout.Dimensions {
-							return material.Body1(th, text).Layout(gtx)
-						}))
-					}
-					return children
-				}()...)
-			}),
-		)
+		return list.Layout(gtx, len(state.DayViewState.Lessons), func(gtx layout.Context, i int) layout.Dimensions {
+			lesson := state.DayViewState.Lessons[i]
+
+			return layout.Flex{Axis: layout.Horizontal}.Layout(gtx,
+				layout.Rigid(func(gtx layout.Context) layout.Dimensions {
+					// Time column (fixed width)
+					return border.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
+						return layout.Center.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
+							return layout.Inset{Right: unit.Dp(8)}.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
+								return material.Body1(th, lesson.Beginn+" - "+lesson.Ende).Layout(gtx)
+							})
+						})
+					})
+				}),
+				layout.Flexed(1, func(gtx layout.Context) layout.Dimensions {
+					// Subject column (flexible)
+					return border.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
+						return layout.Center.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
+							return material.Body1(th, lesson.Fa.Value).Layout(gtx)
+						})
+					})
+				}),
+				layout.Flexed(1, func(gtx layout.Context) layout.Dimensions {
+					// Teacher column (flexible)
+					return border.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
+						return layout.Center.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
+							return material.Body1(th, lesson.Le.Value).Layout(gtx)
+						})
+					})
+				}),
+			)
+		})
+
 	})
 
 }
