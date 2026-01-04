@@ -1,5 +1,7 @@
 ## VPDesktop - Native Desktop Client for VpMobil / Stundenplan24
 
+![VPDesktop Cover](demo/vpdesktop_cover_bw.png)
+
 Overview
 --------
 VPDesktop is a native desktop client for viewing school timetables from VpMobil/Stundenplan24.
