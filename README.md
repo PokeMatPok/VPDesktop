@@ -58,6 +58,10 @@ Installation & Building
    ```
    ./VPDesktop
    ```
+   or
+   ```
+   ./VPDesktop.exe
+   ```
 
 Usage
 -----
