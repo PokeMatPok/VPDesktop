@@ -44,9 +44,15 @@ Installation & Building
    ```
 
 4. Build the desktop client:
-   ```
-   go build -o VPDesktop
-   ```
+   
+   Linux/Darwin:
+      ```
+      go build -o VPDesktop
+      ```
+   Windows:
+      ```
+      go build -ldflags="-H=windowsgui" -o VPDesktop.exe
+      ```
 
 6. Run the app:
    ```
