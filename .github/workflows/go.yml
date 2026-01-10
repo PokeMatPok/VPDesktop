@@ -118,12 +118,11 @@ jobs:
         id: create_release
         uses: actions/create-release@v1
         with:
+          token: ${{ secrets.PAT }}
           tag_name: ${{ steps.get_version.outputs.tag_name }}
           release_name: ${{ steps.get_version.outputs.release_name }}
           draft: false
           prerelease: false
-        env:
-          GITHUB_TOKEN: ${{ secrets.PAT }}
 
       - name: Upload Linux artifact to Release
         uses: actions/upload-release-asset@v1
