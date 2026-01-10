@@ -123,7 +123,7 @@ jobs:
           draft: false
           prerelease: false
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.PAT }}
 
       - name: Upload Linux artifact to Release
         uses: actions/upload-release-asset@v1
@@ -132,6 +132,8 @@ jobs:
           asset_path: ./artifacts/linux/VPDesktop
           asset_name: VPDesktop-linux
           asset_content_type: application/octet-stream
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT }}
 
       - name: Upload Windows artifact to Release
         uses: actions/upload-release-asset@v1
@@ -140,6 +142,8 @@ jobs:
           asset_path: ./artifacts/windows/VPDesktop.exe
           asset_name: VPDesktop-windows.exe
           asset_content_type: application/octet-stream
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT }}
 
       - name: Upload macOS artifact to Release
         uses: actions/upload-release-asset@v1
@@ -148,3 +152,5 @@ jobs:
           asset_path: ./artifacts/macos/VPDesktop
           asset_name: VPDesktop-darwin
           asset_content_type: application/octet-stream
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT }}
