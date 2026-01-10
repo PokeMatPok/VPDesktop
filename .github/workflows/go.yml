@@ -31,9 +31,11 @@ jobs:
       run: |
         sudo apt update
         sudo apt install -y \
-          libxkbcommon-dev \
-          libwayland-dev \
-          pkg-config
+        libxkbcommon-dev \
+        libwayland-dev \
+        pkg-config \
+        libvulkan-dev
+
 
     - name: Ensure Xcode tools
       if: matrix.goos == 'darwin'
