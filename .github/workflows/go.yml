@@ -77,13 +77,33 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: vpdesktop-${{ matrix.goos }}
-        path: ${{ matrix.goos == 'windows' && 'VPDesktop.exe' || 'VPDesktop' }}
-
+        path: |
+          VPDesktop
+          VPDesktop.exe
+          
   release:
     needs: build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      - name: Download Linux artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: vpdesktop-linux
+          path: ./artifacts/linux
+
+      - name: Download Windows artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: vpdesktop-windows
+          path: ./artifacts/windows
+
+      - name: Download macOS artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: vpdesktop-darwin
+          path: ./artifacts/macos
 
       - name: Generate date-based version
         id: get_version
@@ -93,34 +113,19 @@ jobs:
 
           echo "tag_name=$tag" >> $GITHUB_OUTPUT
           echo "release_name=$name" >> $GITHUB_OUTPUT
-      
+
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
         with:
           tag_name: ${{ steps.get_version.outputs.tag_name }}
-          release_name: Build ${{ steps.get_version.outputs.release_name }}
+          release_name: ${{ steps.get_version.outputs.release_name }}
           draft: false
           prerelease: false
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
 
-      - name: Download artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: VPDesktop-linux
-          path: ./artifacts/linux
-      - uses: actions/download-artifact@v4
-        with:
-          name: VPDesktop-windows
-          path: ./artifacts/windows
-      - uses: actions/download-artifact@v4
-        with:
-          name: VPDesktop-darwin
-          path: ./artifacts/macos
-
-
-      - name: Upload Linux artifact
+      - name: Upload Linux artifact to Release
         uses: actions/upload-release-asset@v1
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
@@ -128,7 +133,7 @@ jobs:
           asset_name: VPDesktop-linux
           asset_content_type: application/octet-stream
 
-      - name: Upload Windows artifact
+      - name: Upload Windows artifact to Release
         uses: actions/upload-release-asset@v1
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
@@ -136,10 +141,10 @@ jobs:
           asset_name: VPDesktop-windows.exe
           asset_content_type: application/octet-stream
 
-      - name: Upload macOS artifact
+      - name: Upload macOS artifact to Release
         uses: actions/upload-release-asset@v1
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./artifacts/macos/VPDesktop
-          asset_name: VPDesktop-macos
+          asset_name: VPDesktop-darwin
           asset_content_type: application/octet-stream
