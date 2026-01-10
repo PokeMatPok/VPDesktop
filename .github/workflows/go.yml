@@ -79,3 +79,58 @@ jobs:
         name: vpdesktop-${{ matrix.goos }}
         path: ${{ matrix.goos == 'windows' && 'VPDesktop.exe' || 'VPDesktop' }}
 
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        with:
+          tag_name: ${{ steps.get_version.outputs.version }}
+          release_name: Build ${{ steps.get_version.outputs.version }}
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: VPDesktop-linux
+          path: ./artifacts/linux
+      - uses: actions/download-artifact@v4
+        with:
+          name: VPDesktop-windows
+          path: ./artifacts/windows
+      - uses: actions/download-artifact@v4
+        with:
+          name: VPDesktop-darwin
+          path: ./artifacts/macos
+
+
+      - name: Upload Linux artifact
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./artifacts/linux/VPDesktop
+          asset_name: VPDesktop-linux
+          asset_content_type: application/octet-stream
+
+      - name: Upload Windows artifact
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./artifacts/windows/VPDesktop.exe
+          asset_name: VPDesktop-windows.exe
+          asset_content_type: application/octet-stream
+
+      - name: Upload macOS artifact
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./artifacts/macos/VPDesktop
+          asset_name: VPDesktop-macos
+          asset_content_type: application/octet-stream
