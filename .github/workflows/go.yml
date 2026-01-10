@@ -42,7 +42,7 @@ jobs:
 
 
     - name: Install dependencies
-      if: matrix.goos == 'linux' or matrix.goos == 'darwin'
+      if: matrix.goos == 'linux'
       run: go mod tidy
 
     - name: Download dependencies
