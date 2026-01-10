@@ -1,8 +1,6 @@
 module vpdesktop
 
-go 1.23.8
-
-toolchain go1.24.11
+go 1.23
 
 require (
 	gioui.org v0.9.0
