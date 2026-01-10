@@ -35,8 +35,7 @@ jobs:
         libxkbcommon-dev \
         libwayland-dev \
         pkg-config \
-        libvulkan-dev \
-        vulkan-utils
+        libvulkan-dev
 
     - name: Ensure Xcode tools
       if: matrix.goos == 'darwin'
