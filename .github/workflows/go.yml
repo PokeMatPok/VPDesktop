@@ -31,12 +31,14 @@ jobs:
       run: |
         sudo apt update
         sudo apt install -y \
-        libegl1-mesa-dev \
-        libgl1-mesa-dev \
         libx11-dev \
         libxkbcommon-dev \
         libwayland-dev \
-        pkg-config
+        pkg-config \
+        libvulkan-dev \
+        libegl1-mesa-dev \
+        libgl1-mesa-dev
+
 
 
     - name: Ensure Xcode tools
@@ -54,7 +56,7 @@ jobs:
 
     - name: Build Linux
       if: matrix.goos == 'linux'
-      run: CGO_ENABLED=0 go build -tags nogl -o VPDesktop
+      run: go build -o VPDesktop
 
     - name: Build Windows
       if: matrix.goos == 'windows'
