@@ -50,15 +50,19 @@ jobs:
     - name: Download dependencies
       run: go mod download
 
+    - name: Build Linux
+      if: matrix.goos == 'linux'
+      run: go build -o VPDesktop
 
+    - name: Build Windows
+      if: matrix.goos == 'windows'
+      run: go build -ldflags="-H=windowsgui" -o VPDesktop.exe
+      shell: bash
 
-    - name: Build
-      run: |
-        if [ "${{ matrix.goos }}" = "windows" ]; then
-          go build -ldflags="-H=windowsgui" -o VPDesktop.exe
-        else
-          go build -o VPDesktop
-        fi
+    - name: Build macOS
+      if: matrix.goos == 'darwin'
+      run: go build -o VPDesktop
+
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
