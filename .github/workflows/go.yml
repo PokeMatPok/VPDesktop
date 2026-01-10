@@ -31,11 +31,12 @@ jobs:
       run: |
         sudo apt update
         sudo apt install -y \
+        libx11-dev \
         libxkbcommon-dev \
         libwayland-dev \
         pkg-config \
-        libvulkan-dev
-
+        libvulkan-dev \
+        vulkan-utils
 
     - name: Ensure Xcode tools
       if: matrix.goos == 'darwin'
