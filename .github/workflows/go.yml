@@ -8,11 +8,16 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        goos: [windows, linux, darwin]
-        goarch: [amd64]
+        include:
+          - os: ubuntu-latest
+            goos: linux
+          - os: windows-latest
+            goos: windows
+          - os: macos-latest
+            goos: darwin
     steps:
     - uses: actions/checkout@v4
 
@@ -21,8 +26,25 @@ jobs:
       with:
         go-version: '1.23'
 
+    - name: Install Linux GUI dependencies
+      if: matrix.goos == 'linux'
+      run: |
+        sudo apt update
+        sudo apt install -y \
+          libxkbcommon-dev \
+          libwayland-dev \
+          pkg-config
+
+    - name: Ensure Xcode tools
+      if: matrix.goos == 'darwin'
+      run: xcode-select --install || true
+
+
+
     - name: Install dependencies
+      if: matrix.goos == 'linux'
       run: go mod tidy
+
 
     - name: Build
       run: |
@@ -33,9 +55,8 @@ jobs:
         fi
 
     - name: Upload artifacts
-      uses: actions/download-artifact@v4
+      uses: actions/upload-artifact@v4
       with:
         name: vpdesktop-${{ matrix.goos }}
-        path: |
-          VPDesktop
-          VPDesktop.exe
+        path: ${{ matrix.goos == 'windows' && 'VPDesktop.exe' || 'VPDesktop' }}
+
