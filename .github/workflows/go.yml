@@ -36,8 +36,7 @@ jobs:
         libx11-dev \
         libxkbcommon-dev \
         libwayland-dev \
-        pkg-config \
-        libvulkan-dev
+        pkg-config
 
 
     - name: Ensure Xcode tools
@@ -55,7 +54,7 @@ jobs:
 
     - name: Build Linux
       if: matrix.goos == 'linux'
-      run: go build -o VPDesktop
+      run: CGO_ENABLED=0 go build -tags nogl -o VPDesktop
 
     - name: Build Windows
       if: matrix.goos == 'windows'
