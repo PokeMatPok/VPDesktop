@@ -84,6 +84,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      - name: Generate date-based version
+        id: get_version
+        run: |
+          tag=$(date +release-%d:%m:%Y-%H:%M)
+          name=$(date +Release\ %d.%m.%Y\ %H:%M)
+
+          echo "tag_name=$tag" >> $GITHUB_OUTPUT
+          echo "release_name=$name" >> $GITHUB_OUTPUT
       
       - name: Create Release
         id: create_release
