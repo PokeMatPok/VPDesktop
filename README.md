@@ -35,7 +35,7 @@ Installation & Building
 1. Clone the repository:
    ```
    git clone https://github.com/PokeMatPok/VPDesktop
-   cd https://github.com/PokeMatPok/VPDesktop
+   cd VPDesktop
    ```
 
 2. Install dependencies:
