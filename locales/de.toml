@@ -87,3 +87,21 @@ other = "Falsche Anmeldedaten, bitte prüfen."
 
 [fetch_plans_error_reason_network]
 other = "Es scheint keine Internetverbindung zu bestehen."
+
+[header_next_day]
+other = "Nächster Schultag"
+
+[search_class_hint]
+other = "Klasse suchen..."
+
+[sample_data_button]
+other = "App ausprobieren? Klicke hier für ein Beispieldatensatz."
+
+[sample_data_title]
+other = "Anmerkung zum Datensatz"
+
+[sample_data_body]
+other = "Danke das du die App ausprobierst! Dein Feedback ist mir sehr wichtig, da es hilft, die App zu verbessern. Wenn du Fehler findest oder verbesserungsvorschläge hast kontaktiert mich gern auf Github. \n Bitte beachte, dass alle Daten in diesem Beispieldatensatz völlig fiktiv sind und nur zu Demonstrationszwecken verwendet werden."
+
+[sample_data_continue_button]
+other = "weiter"

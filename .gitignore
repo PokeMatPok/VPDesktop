@@ -14,9 +14,6 @@ build/
 dist/
 
 
-# Go-specific
-go.sum
-
 # Coverage
 coverage*.txt
 coverage*.out

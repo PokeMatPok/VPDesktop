@@ -1,5 +1,10 @@
 package types
 
+import (
+	"gioui.org/layout"
+	"gioui.org/widget"
+)
+
 type TableViewData struct {
 	Title         string
 	SelectedDate  string
@@ -34,6 +39,9 @@ type AppState struct {
 
 	TableViewData TableViewData
 	DayViewState  DayViewState
+
+	ClassClickables map[string]*widget.Clickable
+	ClassList       layout.List
 }
 
 // Dayview related states

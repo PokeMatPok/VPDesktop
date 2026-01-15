@@ -5,7 +5,6 @@ import (
 	"image/color"
 	"log"
 	"os"
-	"strings"
 	"vpdesktop/api"
 	"vpdesktop/cache"
 	"vpdesktop/types"
@@ -70,8 +69,6 @@ func init() {
 	cache.EnsureCacheDirExists()
 
 	go func() {
-		app.Title("VPMobil")
-		app.Size(200, 450)
 		window := new(app.Window)
 
 		window.Option(app.Title("VPMobil"))
@@ -142,22 +139,7 @@ func run(window *app.Window) error {
 
 							keyring.Set("vpdesktop", school+user, pass)
 
-							AppState.ActiveUI = "dayview"
-
-							for _, k := range AppState.ClassesResponse.Klassen.Klassen {
-								if strings.Contains(k.Kurz, AppState.SelectedClass) {
-									AppState.DayViewState.Lessons = []types.LessonDisplayData{}
-									for _, l := range k.Plan.Stunden {
-										lesson := types.LessonDisplayData{
-											Beginn: l.Beginn,
-											Ende:   l.Ende,
-											Fa:     types.ValueWithNote{Value: l.Fa.Value, Note: l.Fa.FaAe},
-											Le:     types.ValueWithNote{Value: l.Le.Value, Note: l.Le.LeAe},
-										}
-										AppState.DayViewState.Lessons = append(AppState.DayViewState.Lessons, lesson)
-									}
-								}
-							}
+							AppState.ActiveUI = "class_select"
 						}
 
 						AppState.Login.LoginInProgress = false
@@ -179,23 +161,7 @@ func run(window *app.Window) error {
 				theme.Fg = color.NRGBA{R: 161, G: 161, B: 161, A: 255}
 				theme.Bg = color.NRGBA{R: 30, G: 30, B: 30, A: 255}
 
-				ui.DrawLoginUI(gtx, theme, &AppState,
-					map[string]string{
-						"title":                            localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "login_title"}),
-						"schoolnumber":                     localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "schoolnumber"}),
-						"username":                         localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "username"}),
-						"password":                         localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "password"}),
-						"class":                            localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "class"}),
-						"remember_login":                   localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "remember_login"}),
-						"login_btn":                        localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "login_btn"}),
-						"fetch_plans_progress":             localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "fetch_plans_progress"}),
-						"fetch_plans_success":              localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "fetch_plans_success"}),
-						"fetch_plans_error_reason_any":     localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "fetch_plans_error_reason_any"}),
-						"fetch_plans_error_reason_auth":    localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "fetch_plans_error_reason_auth"}),
-						"fetch_plans_error_reason_network": localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "fetch_plans_error_reason_network"}),
-						"login_as":                         localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "login_as"}),
-						"delete_login":                     localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "delete_login"}),
-					})
+				ui.DrawLoginUI(gtx, theme, &AppState, localizer)
 				// Pass the drawing operations to the GPU.
 				e.Frame(gtx.Ops)
 
@@ -207,7 +173,43 @@ func run(window *app.Window) error {
 				theme.Fg = color.NRGBA{R: 161, G: 161, B: 161, A: 255}
 				theme.Bg = color.NRGBA{R: 30, G: 30, B: 30, A: 255}
 
-				ui.Wrapper(gtx, theme, &AppState)
+				ui.DayViewWrapper(gtx, theme, &AppState, localizer)
+
+				e.Frame(gtx.Ops)
+
+			case "start":
+				gtx := app.NewContext(&ops, e)
+				theme := material.NewTheme()
+				theme.Palette.ContrastBg = color.NRGBA{R: 255, G: 255, B: 255, A: 255}
+				theme.Palette.ContrastFg = color.NRGBA{R: 0, G: 0, B: 0, A: 255}
+				theme.Fg = color.NRGBA{R: 161, G: 161, B: 161, A: 255}
+				theme.Bg = color.NRGBA{R: 30, G: 30, B: 30, A: 255}
+
+				ui.StartWrapper(gtx, theme, &AppState, localizer)
+
+				e.Frame(gtx.Ops)
+
+			case "class_select":
+				gtx := app.NewContext(&ops, e)
+				theme := material.NewTheme()
+				theme.Palette.ContrastBg = color.NRGBA{R: 255, G: 255, B: 255, A: 255}
+				theme.Palette.ContrastFg = color.NRGBA{R: 0, G: 0, B: 0, A: 255}
+				theme.Fg = color.NRGBA{R: 161, G: 161, B: 161, A: 255}
+				theme.Bg = color.NRGBA{R: 30, G: 30, B: 30, A: 255}
+
+				ui.ClassSelectWrapper(gtx, theme, &AppState, localizer)
+
+				e.Frame(gtx.Ops)
+
+			case "sample_data":
+				gtx := app.NewContext(&ops, e)
+				theme := material.NewTheme()
+				theme.Palette.ContrastBg = color.NRGBA{R: 255, G: 255, B: 255, A: 255}
+				theme.Palette.ContrastFg = color.NRGBA{R: 0, G: 0, B: 0, A: 255}
+				theme.Fg = color.NRGBA{R: 161, G: 161, B: 161, A: 255}
+				theme.Bg = color.NRGBA{R: 30, G: 30, B: 30, A: 255}
+
+				ui.SampleDataUIWrapper(gtx, theme, &AppState, localizer)
 
 				e.Frame(gtx.Ops)
 			}

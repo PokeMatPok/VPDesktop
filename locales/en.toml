@@ -87,3 +87,21 @@ other = "Wrong credentials, please check them."
 
 [fetch_plans_error_reason_network]
 other = "It seems you arent connected to the internet"
+
+[header_next_day]
+other = "Next school day"
+
+[search_class_hint]
+other = "Search class..."
+
+[sample_data_button]
+other = "Want to try the App? Load a sample Dataset."
+
+[sample_data_title]
+other = "Notice about the dataset"
+
+[sample_data_body]
+other = "Thank you for trying out the app! Your feedback is very important to me, as it helps improve the app. If you find any bugs or have suggestions for improvement, feel free to contact me on GitHub. \n Please note that all data in this sample dataset is completely fictional and used for demonstration purposes only."
+
+[sample_data_continue_button]
+other = "continue"

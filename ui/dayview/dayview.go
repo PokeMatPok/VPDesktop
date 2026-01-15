@@ -1,4 +1,4 @@
-package ui
+package dayview
 
 import (
 	"image/color"
