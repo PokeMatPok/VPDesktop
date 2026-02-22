@@ -1,4 +1,4 @@
-package dayview
+package planview
 
 import (
 	"image/color"
@@ -22,6 +22,9 @@ func DrawDayViewUI(gtx layout.Context, th *material.Theme, state *types.AppState
 		list.Axis = layout.Vertical
 
 		return list.Layout(gtx, len(state.DayViewState.Lessons), func(gtx layout.Context, i int) layout.Dimensions {
+
+			gtx.Constraints.Max.X = min(gtx.Constraints.Max.X, gtx.Dp(600))
+
 			lesson := state.DayViewState.Lessons[i]
 
 			return layout.Flex{Axis: layout.Horizontal}.Layout(gtx,

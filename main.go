@@ -33,11 +33,15 @@ func init() {
 	AppState = types.AppState{
 		ActiveUI: "login",
 		Login: types.LoginState{
+			LoginPhase:      "school_entry",
 			LoginRequested:  false,
 			LoginInProgress: false,
 			LoginSuccess:    false,
 			LoginNote:       "",
 		},
+		AnimationStates: make(map[string]*types.AnimationState),
+
+		ViewMode: "day",
 	}
 
 	if cache.HasCacheFile("recent_logins") {
@@ -71,8 +75,8 @@ func init() {
 	go func() {
 		window := new(app.Window)
 
-		window.Option(app.Title("VPMobil"))
-		window.Option(app.Size(400, 600))
+		window.Option(app.Title("VPDesktop"))
+		window.Option(app.Size(800, 600))
 
 		err := run(window)
 		if err != nil {
@@ -112,6 +116,14 @@ func run(window *app.Window) error {
 
 					go func(school, user, pass string) {
 						res, err := fetchTimetable(school, user, pass)
+
+						weekDate, err := api.FetchWeeklyClasses(AppState.SelectedSchool, AppState.SelectedUsername, AppState.SelectedPassword, int(AppState.ClassesResponse.Kopf.TageProWoche))
+
+						if err != nil {
+							log.Println("Error fetching weekly classes:", err)
+						} else {
+							AppState.WeekClassesResponse = weekDate
+						}
 
 						AppState.ClassesResponse = res
 
@@ -153,7 +165,7 @@ func run(window *app.Window) error {
 					)
 				}
 
-				// This graphics context is used for managing the rendering state.
+				// theme
 				gtx := app.NewContext(&ops, e)
 				theme := material.NewTheme()
 				theme.Palette.ContrastBg = color.NRGBA{R: 255, G: 255, B: 255, A: 255}
@@ -162,18 +174,37 @@ func run(window *app.Window) error {
 				theme.Bg = color.NRGBA{R: 30, G: 30, B: 30, A: 255}
 
 				ui.DrawLoginUI(gtx, theme, &AppState, localizer)
-				// Pass the drawing operations to the GPU.
 				e.Frame(gtx.Ops)
 
 			case "dayview":
 				gtx := app.NewContext(&ops, e)
 				theme := material.NewTheme()
-				theme.Palette.ContrastBg = color.NRGBA{R: 255, G: 255, B: 255, A: 255}
-				theme.Palette.ContrastFg = color.NRGBA{R: 0, G: 0, B: 0, A: 255}
-				theme.Fg = color.NRGBA{R: 161, G: 161, B: 161, A: 255}
+				theme.Palette.ContrastBg = color.NRGBA{R: 0, G: 0, B: 0, A: 255}
+				theme.Palette.ContrastFg = color.NRGBA{R: 255, G: 255, B: 255, A: 255}
+				theme.Fg = color.NRGBA{R: 50, G: 50, B: 50, A: 255}
 				theme.Bg = color.NRGBA{R: 30, G: 30, B: 30, A: 255}
 
 				ui.DayViewWrapper(gtx, theme, &AppState, localizer)
+
+				if AppState.ShowDatePicker {
+					ui.DatePickerOverlayWrapper(gtx, theme, &AppState, localizer)
+				}
+
+				e.Frame(gtx.Ops)
+
+			case "weekview":
+				gtx := app.NewContext(&ops, e)
+				theme := material.NewTheme()
+				theme.Palette.ContrastBg = color.NRGBA{R: 0, G: 0, B: 0, A: 255}
+				theme.Palette.ContrastFg = color.NRGBA{R: 255, G: 255, B: 255, A: 255}
+				theme.Fg = color.NRGBA{R: 50, G: 50, B: 50, A: 255}
+				theme.Bg = color.NRGBA{R: 30, G: 30, B: 30, A: 255}
+
+				ui.WeekViewWrapper(gtx, theme, &AppState, localizer)
+
+				if AppState.ShowDatePicker {
+					ui.DatePickerOverlayWrapper(gtx, theme, &AppState, localizer)
+				}
 
 				e.Frame(gtx.Ops)
 
@@ -245,19 +276,3 @@ func fetchTimetable(school, username, password string) (types.ClassesResponse, e
 }
 
 func main() {}
-
-// still in development
-/*func main() {
-	var UITableData types.TableViewData
-
-	UITableData = types.TableViewData{
-
-		ValuesPerRow: int(response.Kopf.TageProWoche),
-		HorHeader:    getLocalizedStrings([]string{"weekday_1", "weekday_2", "weekday_3", "weekday_4", "weekday_5", "weekday_6", "weekday_7"}[0:response.Kopf.TageProWoche]),
-		VerHeader: getLocalizedStrings([]string{
-			"class_1", "class_2", "class_3", "class_4", "class_5",
-			"class_6", "class_7", "class_8", "class_9"}),
-	}
-
-	fmt.Print(UITableData.HorHeader)
-}*/

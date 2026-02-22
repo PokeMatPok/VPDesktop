@@ -64,11 +64,14 @@ other = "Klasse"
 [remember_login]
 other = "Anmeldedaten speichern"
 
+[continue_login_btn]
+other = "Weiter"
+
 [login_btn]
 other = "Anmelden"
 
 [login_as]
-other = "Einloggen als"
+other = "oder einloggen als"
 
 [delete_login]
 other = "Löschen"
@@ -105,3 +108,9 @@ other = "Danke das du die App ausprobierst! Dein Feedback ist mir sehr wichtig, 
 
 [sample_data_continue_button]
 other = "weiter"
+
+[select_favorite_class]
+other = "Favorit auswählen"
+
+[search_prompt]
+other = "Klasse suchen"

@@ -6,6 +6,12 @@ import "encoding/xml"
 Root
 */
 
+type WeeklyClassesResponse struct {
+	FetchStart string            `xml:"fetchStart"`
+	FetchEnd   string            `xml:"fetchEnd"`
+	Classes    []ClassesResponse `xml:"classes>class"`
+}
+
 type ClassesResponse struct {
 	XMLName    xml.Name   `xml:"VpMobil"`
 	Kopf       Kopf       `xml:"Kopf"`

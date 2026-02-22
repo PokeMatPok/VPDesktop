@@ -44,7 +44,7 @@ func Header(gtx layout.Context, th material.Theme, state *types.AppState, locali
 	}
 
 	if settingsButton.Hovered() {
-		pointer.CursorPointer.Add(gtx.Ops)
+		pointer.CursorNotAllowed.Add(gtx.Ops)
 	}
 
 	settingsIcon, err := widget.NewIcon(icons.ActionSettings)
@@ -76,7 +76,7 @@ func Header(gtx layout.Context, th material.Theme, state *types.AppState, locali
 					},
 					{
 						Content: "VPDesktop",
-						Color:   th.Fg,
+						Color:   th.ContrastBg,
 						Size:    unit.Sp(20),
 						Font:    gofont.Collection()[0].Font,
 					},

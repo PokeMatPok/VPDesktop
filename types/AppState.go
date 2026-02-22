@@ -1,6 +1,8 @@
 package types
 
 import (
+	"time"
+
 	"gioui.org/layout"
 	"gioui.org/widget"
 )
@@ -33,19 +35,49 @@ type AppState struct {
 	SelectedClass string
 	SelectedDate  string
 
+	ShowDatePicker bool
+
+	SelectingFavorites bool
+	ActiveFavoriteSlot int
+
+	ViewMode string // "day", "week", "month"
+
 	Login LoginState
 
-	ClassesResponse ClassesResponse
+	ClassesResponse     ClassesResponse
+	WeekClassesResponse WeeklyClassesResponse
 
+	NextDayText   string
 	TableViewData TableViewData
 	DayViewState  DayViewState
+	WeekViewState WeekViewState
 
 	ClassClickables map[string]*widget.Clickable
 	ClassList       layout.List
+
+	AnimationStates map[string]*AnimationState
+
+	lastFrame time.Time
+}
+
+type AnimationState struct {
+	Progress       float32
+	AnimatingIn    bool
+	AnimationState string
+	StartTime      time.Time
+	Duration       time.Duration
 }
 
 // Dayview related states
 type DayViewState struct {
+	Lessons []LessonDisplayData
+}
+
+type WeekViewState struct {
+	Days []DayData
+}
+
+type DayData struct {
 	Lessons []LessonDisplayData
 }
 
@@ -64,6 +96,7 @@ type ValueWithNote struct {
 // Login related states
 
 type LoginState struct {
+	LoginPhase                   string // "school_entry", "user_selection", "password_entry"
 	LoginRequested               bool
 	LoginInProgress              bool
 	LoginSuccess                 bool

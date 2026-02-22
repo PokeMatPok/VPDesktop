@@ -1,4 +1,4 @@
-package dayview
+package planview
 
 import (
 	"fmt"
@@ -9,6 +9,7 @@ import (
 	"gioui.org/font/gofont"
 	"gioui.org/io/pointer"
 	"gioui.org/layout"
+	"gioui.org/op"
 	"gioui.org/op/clip"
 	"gioui.org/op/paint"
 	"gioui.org/text"
@@ -41,7 +42,8 @@ func Header(gtx layout.Context, th *material.Theme, state *types.AppState, local
 	)
 
 	for homeButton.Clicked(gtx) {
-		state.ActiveUI = "class_select" // "start" can be changed to "class_select" or any other UI as needed
+		state.ActiveUI = "start"
+		gtx.Execute(op.InvalidateCmd{})
 	}
 
 	for settingsButton.Clicked(gtx) {
@@ -53,7 +55,7 @@ func Header(gtx layout.Context, th *material.Theme, state *types.AppState, local
 	}
 
 	if settingsButton.Hovered() {
-		pointer.CursorPointer.Add(gtx.Ops)
+		pointer.CursorNotAllowed.Add(gtx.Ops)
 	}
 
 	homeIcon, err := widget.NewIcon(icons.ActionHome)
@@ -81,7 +83,7 @@ func Header(gtx layout.Context, th *material.Theme, state *types.AppState, local
 			layout.Rigid(func(gtx layout.Context) layout.Dimensions {
 				return homeButton.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
 					return layout.Center.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
-						return homeIcon.Layout(gtx, th.Fg)
+						return homeIcon.Layout(gtx, th.ContrastFg)
 					})
 				})
 			}),
@@ -98,8 +100,8 @@ func Header(gtx layout.Context, th *material.Theme, state *types.AppState, local
 						Font:    gofont.Collection()[0].Font,
 					},
 					{
-						Content: "\n" + state.ClassesResponse.Kopf.DatumPlan,
-						Color:   th.Fg,
+						Content: "\n" + state.NextDayText,
+						Color:   th.ContrastFg,
 						Size:    unit.Sp(16),
 						Font:    gofont.Collection()[0].Font,
 					},
@@ -123,7 +125,7 @@ func Header(gtx layout.Context, th *material.Theme, state *types.AppState, local
 			layout.Rigid(func(gtx layout.Context) layout.Dimensions {
 				return settingsButton.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
 					return layout.Center.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
-						return settingsIcon.Layout(gtx, th.Fg)
+						return settingsIcon.Layout(gtx, th.ContrastFg)
 					})
 				})
 			}),

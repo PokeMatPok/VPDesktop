@@ -64,11 +64,14 @@ other = "Class"
 [remember_login]
 other = "remember credentials"
 
+[continue_login_btn]
+other = "Continue"
+
 [login_btn]
 other = "Login"
 
 [login_as]
-other = "login as"
+other = "or login as"
 
 [delete_login]
 other = "Delete"
@@ -105,3 +108,9 @@ other = "Thank you for trying out the app! Your feedback is very important to me
 
 [sample_data_continue_button]
 other = "continue"
+
+[select_favorite_class]
+other = "choose a Favorite"
+
+[search_prompt]
+other = "search a class"

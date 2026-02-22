@@ -3,6 +3,7 @@ package api
 import (
 	"encoding/xml"
 	"net/http"
+	"time"
 	"vpdesktop/types"
 )
 
@@ -79,4 +80,42 @@ func VPMobilRoomsRequest(url string, username string, password string) (types.Ro
 
 	return result, nil
 
+}
+
+func GetCurrentWeek(daysPerWeek int) (dateStart time.Time, dateEnd time.Time) {
+	currentDate := time.Now()
+	weekday := int(currentDate.Weekday())
+	if weekday == 0 {
+		weekday = 7
+	}
+
+	if weekday <= 5 {
+		weekStart := currentDate.AddDate(0, 0, -weekday+1)
+		weekEnd := weekStart.AddDate(0, 0, daysPerWeek-1)
+		return weekStart, weekEnd
+	} else {
+		weekStart := currentDate.AddDate(0, 0, -weekday+8)
+		weekEnd := weekStart.AddDate(0, 0, daysPerWeek-1)
+		return weekStart, weekEnd
+	}
+}
+
+func FetchWeeklyClasses(school, username, password string, daysPerWeek int) (types.WeeklyClassesResponse, error) {
+	weekStart, weekEnd := GetCurrentWeek(daysPerWeek)
+
+	var weeklyClasses types.WeeklyClassesResponse
+	weeklyClasses.FetchStart = weekStart.Format("2006-01-02")
+	weeklyClasses.FetchEnd = weekEnd.Format("2006-01-02")
+
+	for date := weekStart; !date.After(weekEnd); date = date.AddDate(0, 0, 1) {
+		url := ComposeURL("stundenplan24.de", types.PlanByClass, school, date, ".xml")
+		response, err := VPMobilClassesRequest(url, username, password)
+
+		if err != nil {
+			return types.WeeklyClassesResponse{}, err
+		}
+
+		weeklyClasses.Classes = append(weeklyClasses.Classes, response)
+	}
+	return weeklyClasses, nil
 }
