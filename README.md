@@ -30,8 +30,6 @@ Upcoming Features
 - Table views: ~~week view~~ / month view
 - Timetable caching for offline access and faster startup
 
-Note: Features to be merged soon.
-
 Installation & Building
 ----------------------
 1. Clone the repository:
