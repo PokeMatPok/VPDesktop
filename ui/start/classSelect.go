@@ -4,6 +4,7 @@ import (
 	"image"
 	"image/color"
 	"strings"
+	"vpdesktop/cache"
 	"vpdesktop/types"
 
 	"gioui.org/f32"
@@ -157,6 +158,12 @@ func ClassSelectUI(gtx layout.Context, th *material.Theme, state *types.AppState
 							if state.ClassClickables[classes[i]].Clicked(gtx) {
 								state.SelectedClass = classes[i]
 								if state.SelectingFavorites {
+									state.SelectingFavorites = false
+									if state.FavoriteClasses == nil {
+										state.FavoriteClasses = &[]string{}
+									}
+									*state.FavoriteClasses = append(*state.FavoriteClasses, classes[i])
+									cache.WriteJSONCacheFile("favorite_classes", *state.FavoriteClasses)
 									state.ActiveUI = "start"
 								} else {
 									state.ActiveUI = "weekview"

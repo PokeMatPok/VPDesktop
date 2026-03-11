@@ -114,3 +114,6 @@ other = "Favorit auswählen"
 
 [search_prompt]
 other = "Klasse suchen"
+
+[no_data]
+other = "Keine Daten verfügbar"

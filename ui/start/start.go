@@ -2,6 +2,7 @@ package start
 
 import (
 	"image/color"
+	"vpdesktop/cache"
 	"vpdesktop/types"
 
 	"gioui.org/f32"
@@ -17,18 +18,27 @@ import (
 )
 
 var classSearchButton widget.Clickable
+var addFavoriteButton widget.Clickable
+var favoriteClassesButtons []widget.Clickable
+var favoriteRemoveButtons []widget.Clickable
 var searchIcon *widget.Icon
+var favoriteIcon *widget.Icon
+var removeIcon *widget.Icon
 
-func Row(gtx layout.Context, th *material.Theme, state *types.AppState, text string, wrapper *widget.Clickable, col color.NRGBA) layout.FlexChild {
+func when(condition bool, f layout.FlexChild) layout.FlexChild {
+	if condition {
+		return f
+	}
+	return layout.Rigid(func(gtx layout.Context) layout.Dimensions {
+		return layout.Dimensions{}
+	})
+}
+
+func Row(gtx layout.Context, th *material.Theme, state *types.AppState, text string, wrapper *widget.Clickable, col color.NRGBA, icon *widget.Icon, showRemoveIcon bool, removeButton *widget.Clickable, removeIcon *widget.Icon) layout.FlexChild {
 	border := widget.Border{
 		Color:        col,
 		Width:        1,
 		CornerRadius: 10,
-	}
-
-	searchIcon, err := widget.NewIcon(icons.ActionSearch)
-	if err != nil {
-		panic(err)
 	}
 
 	return layout.Flexed(1, func(gtx layout.Context) layout.Dimensions {
@@ -41,11 +51,11 @@ func Row(gtx layout.Context, th *material.Theme, state *types.AppState, text str
 					return layout.UniformInset(10).Layout(gtx, func(gtx layout.Context) layout.Dimensions {
 						return border.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
 							return layout.Center.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
-								return layout.Flex{Axis: layout.Horizontal, Alignment: layout.Middle}.Layout(gtx,
+								flexChildren := []layout.FlexChild{
 									layout.Rigid(func(gtx layout.Context) layout.Dimensions {
 										return layout.Center.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
 											return layout.UniformInset(unit.Dp(5)).Layout(gtx, func(gtx layout.Context) layout.Dimensions {
-												return searchIcon.Layout(gtx, color.NRGBA{R: 255, G: 255, B: 255, A: 120})
+												return icon.Layout(gtx, color.NRGBA{R: 255, G: 255, B: 255, A: 120})
 											})
 										})
 									}),
@@ -56,7 +66,21 @@ func Row(gtx layout.Context, th *material.Theme, state *types.AppState, text str
 											})
 										})
 									}),
-								)
+								}
+
+								if showRemoveIcon && removeButton != nil && removeIcon != nil {
+									flexChildren = append(flexChildren, layout.Rigid(func(gtx layout.Context) layout.Dimensions {
+										return removeButton.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
+											return layout.Center.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
+												return layout.UniformInset(unit.Dp(5)).Layout(gtx, func(gtx layout.Context) layout.Dimensions {
+													return removeIcon.Layout(gtx, color.NRGBA{R: 255, G: 255, B: 255, A: 120})
+												})
+											})
+										})
+									}))
+								}
+
+								return layout.Flex{Axis: layout.Horizontal, Alignment: layout.Middle}.Layout(gtx, flexChildren...)
 							})
 						})
 					})
@@ -67,10 +91,52 @@ func Row(gtx layout.Context, th *material.Theme, state *types.AppState, text str
 }
 
 func DrawStartUI(gtx layout.Context, th material.Theme, state *types.AppState, localizer *i18n.Localizer) layout.Dimensions {
+	searchIcon, err := widget.NewIcon(icons.ActionSearch)
+	if err != nil {
+		panic(err)
+	}
+
+	favoriteIcon, err := widget.NewIcon(icons.ActionFavorite)
+	if err != nil {
+		panic(err)
+	}
+
+	removeIcon, err := widget.NewIcon(icons.ActionDelete)
+	if err != nil {
+		panic(err)
+	}
 
 	if classSearchButton.Clicked(gtx) {
 		state.ActiveUI = "class_select"
 		gtx.Execute(op.InvalidateCmd{})
+	}
+
+	if addFavoriteButton.Clicked(gtx) {
+		state.SelectingFavorites = true
+		state.ActiveFavoriteSlot = len(*state.FavoriteClasses)
+		state.ActiveUI = "class_select"
+		gtx.Execute(op.InvalidateCmd{})
+	}
+
+	for i := range favoriteClassesButtons {
+		if favoriteClassesButtons[i].Clicked(gtx) {
+			if i < len(*state.FavoriteClasses) {
+				state.SelectedClass = (*state.FavoriteClasses)[i]
+				state.ActiveUI = "weekview"
+				gtx.Execute(op.InvalidateCmd{})
+			}
+		}
+
+		if favoriteRemoveButtons[i].Clicked(gtx) {
+			if i < len(*state.FavoriteClasses) {
+				// Remove the class from favorites
+				*state.FavoriteClasses = append((*state.FavoriteClasses)[:i], (*state.FavoriteClasses)[i+1:]...)
+				cache.WriteJSONCacheFile("favorite_classes", *state.FavoriteClasses)
+
+				state.ActiveUI = "start"
+				gtx.Execute(op.InvalidateCmd{})
+			}
+		}
 	}
 
 	size := gtx.Constraints.Max
@@ -87,7 +153,25 @@ func DrawStartUI(gtx layout.Context, th material.Theme, state *types.AppState, l
 
 	children := []layout.FlexChild{}
 
-	children = append(children, Row(gtx, &th, state, localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "search_prompt"}), &classSearchButton, color.NRGBA{R: 255, G: 255, B: 255, A: 50}))
+	children = append(children, Row(gtx, &th, state, localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "search_prompt"}), &classSearchButton, color.NRGBA{R: 255, G: 255, B: 255, A: 50}, searchIcon, false, nil, nil))
+
+	for i, favoriteClass := range *state.FavoriteClasses {
+		if i >= 3 {
+			break
+		}
+
+		if i >= len(favoriteClassesButtons) {
+			favoriteClassesButtons = append(favoriteClassesButtons, widget.Clickable{})
+
+			favoriteRemoveButtons = append(favoriteRemoveButtons, widget.Clickable{})
+		}
+
+		children = append(children, Row(gtx, &th, state, favoriteClass, &favoriteClassesButtons[i], color.NRGBA{R: 255, G: 255, B: 255, A: 50}, favoriteIcon, true, &favoriteRemoveButtons[i], removeIcon))
+	}
+
+	if len(*state.FavoriteClasses) < 3 {
+		children = append(children, Row(gtx, &th, state, localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "select_favorite_class"}), &addFavoriteButton, color.NRGBA{R: 255, G: 255, B: 255, A: 20}, favoriteIcon, false, nil, nil))
+	}
 
 	return layout.Flex{Axis: layout.Vertical, Spacing: layout.SpaceBetween}.Layout(gtx,
 		layout.Rigid(func(gtx layout.Context) layout.Dimensions {

@@ -51,7 +51,11 @@ func WeekViewWrapper(gtx layout.Context, th *material.Theme, state *types.AppSta
 
 	state.WeekViewState.Days = []types.DayData{}
 
-	state.NextDayText = state.WeekClassesResponse.Classes[0].Kopf.DatumPlan
+	if len(state.WeekClassesResponse.Classes) == 0 {
+		state.NextDayText = ""
+	} else {
+		state.NextDayText = state.WeekClassesResponse.Classes[0].Kopf.DatumPlan
+	}
 
 	for _, day := range state.WeekClassesResponse.Classes {
 		for _, k := range day.Klassen.Klassen {

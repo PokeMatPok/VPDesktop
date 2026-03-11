@@ -30,6 +30,7 @@ var AppState types.AppState
 func init() {
 	var err error
 
+	favoriteClasses := make([]string, 0)
 	AppState = types.AppState{
 		ActiveUI: "login",
 		Login: types.LoginState{
@@ -40,6 +41,8 @@ func init() {
 			LoginNote:       "",
 		},
 		AnimationStates: make(map[string]*types.AnimationState),
+
+		FavoriteClasses: &favoriteClasses,
 
 		ViewMode: "day",
 	}
@@ -57,6 +60,14 @@ func init() {
 				AppState.SelectedUsername = credentials.Username
 				AppState.SelectedPassword = password
 			}
+		}
+	}
+
+	if cache.HasCacheFile("favorite_classes") {
+		favoriteClasses, err := cache.ReadJSONCacheFile[[]string]("favorite_classes")
+
+		if err == nil {
+			AppState.FavoriteClasses = &favoriteClasses
 		}
 	}
 

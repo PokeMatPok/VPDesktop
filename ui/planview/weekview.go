@@ -50,6 +50,14 @@ func TableCell(gtx layout.Context, th *material.Theme, isHeader bool, content []
 
 func DrawWeekViewUI(gtx layout.Context, th *material.Theme, state *types.AppState, localizer *i18n.Localizer) layout.Dimensions {
 
+	if len(state.WeekViewState.Days) == 0 {
+		return layout.Center.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
+			return material.Body1(th, localizer.MustLocalize(&i18n.LocalizeConfig{
+				MessageID: "no_data",
+			})).Layout(gtx)
+		})
+	}
+
 	return layout.Center.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
 		var list layout.List
 		list.Axis = layout.Horizontal

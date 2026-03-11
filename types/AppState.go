@@ -57,6 +57,8 @@ type AppState struct {
 
 	AnimationStates map[string]*AnimationState
 
+	FavoriteClasses *[]string
+
 	lastFrame time.Time
 }
 
